@@ -4,6 +4,8 @@ import tkinter as tk
 from tkinter import ttk
 import random
 import threading
+import desktop_notifier as dn
+import asyncio 
 
 
 def block(event): #stops unwanted events
@@ -26,19 +28,29 @@ def set_interval():
     new_interval = validator(interval_pick.get())
     interval.set(new_interval)
     schedule.cancel_job(call_job)
-    call_job = schedule.every(new_interval).seconds.do(call)
+    call_job = schedule.every(new_interval).seconds.do(call) # remember to change this to minutes
     interval_pick.delete(0,tk.END)
 
     current_interval.destroy()
-    current_interval = tk.Label(text=f"current interval: {interval.get()} minutes" , pady = "10")
+    current_interval = tk.Label(text=f"current interval: {interval.get()} minutes" , pady = "10", font=("arial",11,"bold"))
     current_interval.pack()
 
+
+
+notifier_instance = dn.DesktopNotifier(app_name = "Flow")
 
 
 def call():
     motivations = ["nice work take a breather and drink some water", "good going, stay hydrated!", "it sure is hot in here, some water would be nice...", "did you know water can make you not thirsty?",
                    "the human body consists of about 65% water, go drink some!", "GO DRINK SOME WATER", "Your body called... it needs water", "Hey, time for a water break!", 
                    "Hey champ, fix that posture and drink some water!", "psst.. hey... CHUG DAT WATER"]
+    
+    
+    async def notifier():
+        await notifier_instance.send(title = "water break", message = "hi")
+
+        
+    asyncio.run(notifier())
     print(random.choice(motivations)) # change this to give system notification
 
 
@@ -62,7 +74,7 @@ ttk.Style().configure("my.TButton", font=("Arial",12,"bold"))
 
 interval_section = tk.Frame(root)
 interval_section.pack()
-interval = tk.IntVar(root, value=1)
+interval = tk.IntVar(root, value=5)
 
 interval_text= tk.Label(interval_section, text="reminder interval (min) :", font=("Arial",15,"bold"))
 interval_text.pack(side="left")
@@ -74,7 +86,7 @@ interval_pick.bind("<Return>",block ) # this stops the input passing using the e
 interval_button = ttk.Button(interval_section, style="my.TButton", text="confirm", command=set_interval)
 interval_button.pack(side ="right")
 
-current_interval = tk.Label(text=f"current interval: {interval.get()} minutes", pady="10")
+current_interval = tk.Label(text=f"current interval: {interval.get()} minutes", pady="10", font=("arial",11,"bold"))
 current_interval.pack()
 
 
@@ -89,3 +101,4 @@ threading.Thread(target=check, daemon=True).start()
 root.mainloop()
 
 #add dark mode
+# integrate system notifications
